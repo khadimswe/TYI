@@ -1,9 +1,0 @@
-TagYouAreIt – NOTE
-==================
-
-This file is **not** a Python requirements file and should **not** be used with `pip install -r requirements.txt`.
-
-- Frontend dependency list: see `frontend/requirements.txt`
-- Backend dependency list: see `backend/requirements.txt`
-- Higher-level tech requirements: see `docs/tech-requirements.txt`
-

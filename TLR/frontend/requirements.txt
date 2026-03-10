@@ -1,43 +1,9 @@
-TagYouAreIt – Frontend (Expo / React Native) Requirements
-=========================================================
+TagYouAreIt – NOTE
+==================
 
-# This is a reference list for npm/yarn installs.
-# Do NOT run "pip install -r requirements.txt" on this file.
+This file is **not** a Python requirements file and should **not** be used with `pip install -r requirements.txt`.
 
-# Core
-expo
-react-native
-react
-typescript
-
-# Styling
-nativewind
-tailwindcss
-
-# Animations and gestures
-react-native-reanimated
-react-native-gesture-handler
-@shopify/react-native-skia
-moti
-lottie-react-native
-
-# Maps & location
-react-native-maps        # or expo-maps if you choose that
-expo-location
-
-
-# Suggested install commands
-
-# 1) From project root:
-#    cd frontend
-#
-# 2) Initialize if needed:
-#    npm init -y
-#
-# 3) Install:
-#    npm install expo react-native react typescript \
-#      nativewind tailwindcss \
-#      react-native-reanimated react-native-gesture-handler \
-#      @shopify/react-native-skia moti lottie-react-native \
-#      react-native-maps expo-location
+- Frontend dependency list: see `frontend/requirements.txt`
+- Backend dependency list: see `backend/requirements.txt`
+- Higher-level tech requirements: see `docs/tech-requirements.txt`
 
