@@ -1,0 +1,159 @@
+## TagYouAreIt – Technical Stack & Architecture
+
+### 1. Frontend
+
+**Core Framework**
+
+- **React Native**: Single codebase for both iOS and Android, optimized for speed and iteration during a hackathon.
+- **Expo**: Streamlines development and deployment with minimal native configuration, ideal for rapid prototyping and demos.
+- **NativeWind**: Tailwind-style utility classes in React Native for fast, consistent styling across the app.
+
+**Animations & Interactions**
+
+- **Reanimated 2**: Primary animation engine for smooth, performant, interruptible animations.
+- **Lottie**: High-quality micro-animations used for:
+  - Tag catch celebrations
+  - Points earned animations
+  - Streak maintained / milestone moments
+- **React Native Skia**: GPU-accelerated drawing for rich visual effects such as:
+  - Sonar pulse rings radiating outward when a tag launches
+- **Moti**: Declarative animation layer on top of Reanimated for:
+  - Floating, pulsing, and growing map bubbles
+  - Subtle UI transitions and micro-interactions
+- **React Native Gesture Handler**: Robust gesture system for:
+  - Smooth swipe interactions on the Board
+  - Interactive leaderboard and other touch-heavy components
+- **Expo Blur**: Provides blur and frosted glass effects for:
+  - Tag popups
+  - Profile overlays
+  - Modal surfaces and cards to create a premium visual feel
+
+**Planned Signature Animations**
+
+- **Sonar rings** pulsing outward from the student’s approximate location when a tag launches.
+- **Bubbles on the map** gently floating and vibrating when active.
+- **Bubble intensity**: Bubble grows and glows brighter with each pass or increased “heat”.
+- **Points counter** animating upward whenever points are earned.
+- **Leaderboard transitions**: Rows animate into new positions when rankings shift.
+- **“On Fire” badge** that pulses with a flame-like effect.
+- **SOS button** that pulses red while it is being held.
+- **Tag catch moment**: Screen flash plus confetti burst when a hot tag is accepted.
+
+---
+
+### 2. Backend
+
+**Platform**
+
+- **Firebase**: Unified backend platform combining:
+  - **Authentication**: Handles school email verification and user identity.
+  - **Firestore**: Real-time database for:
+    - Live tag states
+    - Bubble map updates
+    - Leaderboard and streak data
+  - **Cloud Functions**: Serverless logic for:
+    - Tag passing rules and validation
+    - Reward and multiplier calculations
+    - Integrations with external APIs (e.g., Claude, Twilio)
+  - **Cloud Messaging / Push Notifications**:
+    - Tag alerts (incoming hot tag, tag expiring, etc.)
+    - Streak reminders and engagement nudges
+  - **Firebase Storage**:
+    - Profile pictures
+    - Any other user media assets as needed
+
+**Location & Maps**
+
+- **Google Maps API**:
+  - Renders the campus bubble map.
+  - Uses imprecise location “zones” instead of precise GPS coordinates.
+  - Prioritizes privacy by working with generalized regions rather than exact user positions.
+
+**SOS & Communications**
+
+- **Twilio**:
+  - Powers one-tap SOS SMS flows.
+  - Sends messages to:
+    - Trusted contacts selected by the student
+    - Campus safety or police, depending on configuration.
+
+---
+
+### 3. AI Layer
+
+**Core AI Services**
+
+- **Claude API**:
+  - **Board question matching**:
+    - Matches questions with relevant subjects, categories, or existing content.
+  - **Subject verification**:
+    - Ensures questions and posts align with allowed academic or campus topics.
+  - **Moderation & safety**:
+    - Automatically flags or filters inappropriate content.
+    - Helps maintain a safe and respectful environment.
+
+**Developer Acceleration**
+
+- **Cursor**:
+  - Used throughout development to:
+    - Accelerate coding workflows.
+    - Assist with refactors, documentation, and iteration.
+    - Prototype and integrate AI-assisted features more quickly.
+
+---
+
+### 4. Design System
+
+**Design Workflow**
+
+- **Figma**:
+  - Primary tool for:
+    - Wireframing every screen before implementation.
+    - Designing interaction flows and animation storyboards.
+  - Goal: avoid rebuilding layouts by validating UX early.
+
+**Typography**
+
+- **Fonts**:
+  - **SF Pro** or **Plus Jakarta Sans**:
+    - Clean, modern, and premium-feeling.
+    - Optimized for mobile readability and a polished aesthetic.
+
+**Theming**
+
+- **Dark mode first**:
+  - Optimized for nighttime usage patterns common among students.
+  - Dark backgrounds allow animations and electric colors to “pop”.
+
+**Color System**
+
+- **Background**:
+  - Deep navy or charcoal as the primary background.
+- **Primary / Active**:
+  - **Electric blue** for:
+    - Active tags
+    - Sonar pulses
+- **Accents**:
+  - **Amber / gold** for:
+    - Points
+    - Leaderboard highlights and trophy elements
+- **Alert / Danger**:
+  - **Red pulse** for:
+    - SOS button
+    - High-priority alerts
+- **Success / Confirmation**:
+  - **Green** for:
+    - Completed sessions
+    - Streak confirmations or upgrades
+
+---
+
+### 5. (To Be Added) Product Explanation
+
+> This section will describe:
+> - The core problem TagYouAreIt solves.
+> - Target users (students, campuses).
+> - Key user journeys (getting tagged, passing a tag, SOS usage, Board usage).
+> - Differentiation versus typical campus apps or social platforms.
+
+You can place the detailed product explanation here or above the technical sections depending on your audience.

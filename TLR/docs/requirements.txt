@@ -1,0 +1,119 @@
+TagYouAreIt – Requirements
+==========================
+
+1. Functional Requirements
+--------------------------
+
+FR1 – User Registration & Verification
+- FR1.1: Users must be able to sign up with name, classification, and school email.
+- FR1.2: The system must verify school emails via a code or link before allowing full access.
+- FR1.3: Only emails from approved campus domains should be accepted for verification.
+
+FR2 – Profile & Academic Data
+- FR2.1: Users must be able to select current classes they are taking.
+- FR2.2: Users must be able to indicate classes they have previously completed with B+ or higher.
+- FR2.3: Users must be able to list hobbies and interest areas.
+- FR2.4: Users must be able to set language preferences for better matching.
+
+FR3 – Trusted Contacts & Safety
+- FR3.1: Users must be able to add at least one and up to two trusted contacts with phone numbers.
+- FR3.2: Trusted contacts must receive SOS notifications when triggered by the user.
+
+FR4 – Home / Dashboard
+- FR4.1: The home screen must show a leaderboard for the user’s campus.
+- FR4.2: The home screen must show hot topics or popular tags relevant to the user’s classes and interests.
+- FR4.3: The home screen must display the user’s current points and profile entry point.
+
+FR5 – Send a Tag
+- FR5.1: Users must be able to create a tag with subject, topic, and urgency.
+- FR5.2: When a tag is sent, an animated sonar effect must be shown to the user.
+- FR5.3: Tags must automatically be assigned to eligible nearby students based on subject, academic history, and zone.
+- FR5.4: Each recipient must have a limited time window (e.g., 15 minutes) to accept or pass the tag.
+- FR5.5: Passing a tag must increase its reward multiplier and update its visual status (e.g., hotter bubble).
+
+FR6 – Live Tags (Map)
+- FR6.1: Users must be able to view a map of active tags using imprecise location bubbles rather than exact coordinates.
+- FR6.2: Bubbles must be color-coded by subject.
+- FR6.3: Bubble size must increase with the number of passes (hot tags are larger).
+- FR6.4: Bubbles that the user is eligible to catch must visually pulse.
+- FR6.5: Tapping a bubble must show detailed information and provide a single primary action: “Catch It”.
+
+FR7 – Sessions & Points
+- FR7.1: Accepting and completing a tag session must award points to the tutor (and optionally the student).
+- FR7.2: Points must be reflected in the user’s profile and the campus leaderboard.
+- FR7.3: Users must be able to redeem points for defined campus rewards (e.g., dining dollars, swipes, discounts).
+
+FR8 – The Board (Q&A)
+- FR8.1: Users must be able to post short questions (≤ 280 characters) associated with a subject.
+- FR8.2: Subject-verified students must see relevant questions in their feed.
+- FR8.3: Users must be able to submit answers and upvote or accept answers.
+- FR8.4: The accepted answer’s author must receive points.
+- FR8.5: The system must track daily answer activity to support streaks.
+
+FR9 – Streaks & Badges
+- FR9.1: Answering at least one Board question per day must maintain a streak.
+- FR9.2: Streak multipliers must increase points earned while the streak is active.
+- FR9.3: Breaking a streak must reset the multiplier.
+- FR9.4: Answering five or more questions in one day must unlock an “On Fire” badge for that day, visible on the leaderboard.
+
+FR10 – SOS & Incident Handling
+- FR10.1: The app must provide a one-tap SOS action that sends an SMS with approximate location to trusted contacts.
+- FR10.2: The app must support escalation to campus safety or police via a second, clearly distinguished action.
+- FR10.3: Every SOS event must be logged for review (including user, zone, time).
+- FR10.4: The system must be able to flag users involved in repeated incidents and apply enforcement rules (e.g., temporary suspension, permanent removal).
+
+FR11 – Messaging / Follow-Up
+- FR11.1: After completing a session, the two participants must be able to communicate via a session-specific thread or DM.
+- FR11.2: After multiple completed sessions between the same pair, users must be able to “connect” more persistently (e.g., add as campus contact or link to LinkedIn).
+
+
+2. Non-Functional Requirements
+------------------------------
+
+NFR1 – Performance & Responsiveness
+- NFR1.1: Common screens (Home, Live Tags, Board) should load within 2 seconds on a typical campus network.
+- NFR1.2: Real-time updates for tags and Board content should appear within 1–3 seconds of changes.
+
+NFR2 – Availability & Reliability
+- NFR2.1: Core features (Send a Tag, Live Tags, SOS) should target at least 99% uptime during active hours.
+- NFR2.2: SOS functionality must degrade gracefully if external providers (e.g., Twilio) are unavailable (e.g., display clear error and offline instructions).
+
+NFR3 – Security & Privacy
+- NFR3.1: All network communication must be encrypted via HTTPS/TLS.
+- NFR3.2: Exact GPS coordinates must never be displayed to other users; only zones or approximate areas are shown.
+- NFR3.3: Access to user data must be controlled with fine-grained security rules (e.g., users can only modify their own profile).
+- NFR3.4: Sensitive data such as trusted contact numbers must be stored securely and accessed only for SOS flows.
+
+NFR4 – Safety & Moderation
+- NFR4.1: All Board posts must pass through an AI or rules-based moderation layer before being fully visible.
+- NFR4.2: Inappropriate content must be blocked or flagged for admin review.
+- NFR4.3: There must be a mechanism for users to report harmful behavior or unsafe meetups.
+
+NFR5 – Usability & Accessibility
+- NFR5.1: The app must be usable in dark mode by default and designed for heavy night-time usage.
+- NFR5.2: Core flows (Send a Tag, Catch a Tag, Answer a Question, SOS) should be discoverable within 1–2 taps from the home screen.
+- NFR5.3: Text and controls must be legible and operable for common mobile screen sizes.
+
+NFR6 – Extensibility
+- NFR6.1: The architecture must allow additional campuses, subjects, and reward types to be added without code changes in the mobile app (via config in the backend).
+- NFR6.2: AI providers, SMS providers, or identity providers should be swappable behind well-defined backend abstractions.
+
+
+3. Technical Stack Requirements
+-------------------------------
+
+TR1 – Frontend
+- React Native + Expo for cross-platform mobile development.
+- NativeWind for utility-based styling.
+- Reanimated, Moti, Lottie, and Skia for animation and visual effects.
+- Google Maps integration for bubble map visualization.
+
+TR2 – Backend
+- Firebase Authentication, Firestore, Cloud Functions, Cloud Messaging, and Storage.
+- Integration with Claude API for moderation and matching.
+- Integration with Twilio for SOS SMS.
+
+TR3 – Tooling & Design
+- Figma as the primary design and prototyping tool.
+- Cursor (or similar AI-assisted IDE) for accelerated development.
+

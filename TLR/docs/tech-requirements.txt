@@ -1,0 +1,54 @@
+TagYouAreIt – Dev Environment Requirements
+==========================================
+
+# Global tools (installed on your machine)
+
+node>=18.0.0
+npm>=9.0.0          # comes with Node
+git>=2.40.0
+firebase-tools>=13.0.0   # installed via: npm install -g firebase-tools
+
+# Optional (for local Android dev on Windows)
+android-studio>=2024.1.0
+
+
+# Frontend (install inside /frontend with npm or yarn)
+
+# Run: cd frontend
+#     npm install
+
+# Core
+react-native        # managed by Expo
+expo
+react
+typescript
+
+# Styling
+nativewind
+tailwindcss
+
+# Animations and gestures
+react-native-reanimated
+react-native-gesture-handler
+@shopify/react-native-skia
+moti
+lottie-react-native
+
+# Maps & location
+react-native-maps           # or expo-maps if you choose that
+expo-location
+
+
+# Backend (Firebase Functions – inside /backend/functions)
+
+# Run: cd backend/functions
+#     npm install
+
+firebase-functions
+firebase-admin
+axios                       # or another HTTP client for Claude/Twilio
+
+# Integrations (used in Cloud Functions)
+openai                      # or official Claude SDK when available
+twilio
+

@@ -1,0 +1,170 @@
+TagYouAreIt – System Architecture
+=================================
+
+1. Overview
+-----------
+
+TagYouAreIt is a mobile-first platform that turns peer tutoring into a game. A React Native + Expo client connects to a Firebase backend, with AI moderation and matching via Claude, SMS via Twilio, and campus-safe location visualized through Google Maps.
+
+The architecture is optimized for:
+- Fast hackathon delivery (Expo, Firebase, serverless functions).
+- Real-time, event-driven gameplay (tags, passes, streaks).
+- Safety and privacy (imprecise zones, SOS, moderation).
+
+
+2. High-Level Components
+------------------------
+
+2.1 Mobile App (React Native + Expo)
+- Presents all user-facing flows:
+  - Onboarding (profile, classes, hobbies, language, trusted contacts).
+  - Home / Dashboard (leaderboard, hot tags, points, profile).
+  - Send a Tag (launch UI + sonar animation).
+  - Live Tags (bubble map view).
+  - The Board (micro Q&A feed).
+  - Cash Out (redeem points).
+  - SOS trigger (one / two-tap SOS).
+- Handles:
+  - Auth UI and token handling with Firebase.
+  - Real-time subscription to Firestore collections (tags, leaderboard, board posts).
+  - Client-side filtering and rendering of eligible tags.
+  - Triggering Cloud Functions via HTTPS for actions that require secure logic (tag passes, SOS, moderation).
+
+2.2 Firebase Backend
+- Authentication
+  - Email/password or magic-link auth restricted to school domains.
+  - Stores basic identity and links to user profile document.
+- Firestore (Realtime Database)
+  - Collections (example):
+    - users
+      - id, name, classification, schoolEmail, verified, classesCurrent[], classesPassed[], hobbies[], languages[], trustedContacts[], points, streak, statusFlags.
+    - tags
+      - id, subject, topic, status (pending, active, accepted, completed, expired), ownerUserId, eligibleUserIds[], passCount, rewardMultiplier, zoneId, createdAt, expiresAt.
+    - zones
+      - id, campusId, displayName, polygon or (center, radius), isSafeSpot.
+    - sessions
+      - id, tagId, tutorId, studentId, scheduledAt / startedAt / endedAt, zoneId, rating, notes.
+    - boardPosts
+      - id, authorUserId, subject, questionText, createdAt, status (pending, approved, rejected), flags, acceptedAnswerId, streakImpact.
+    - boardAnswers
+      - id, postId, authorUserId, answerText, createdAt, upvotes, isAccepted.
+    - leaderboard
+      - id (campus or global), topUsers[], lastUpdatedAt.
+    - sosEvents
+      - id, userId, createdAt, zoneId, escalationLevel (trustedContact, campusSafety), resolvedAt, notes.
+- Cloud Functions
+  - Tag lifecycle:
+    - createTag: validate input, assign initial eligible users based on subject + classes, set zoneId, initialize passCount and rewardMultiplier.
+    - acceptTag: ensure the user is eligible, tag is active, and within time window; create or update a session; update points.
+    - passTag: validate that user holds the tag, increment passCount and rewardMultiplier, choose next eligible user(s), trigger notifications.
+    - expireTag: scheduled/cron or Firestore-triggered function to set expired status when time window closes.
+  - Points & streaks:
+    - updatePointsOnSessionComplete: add points to tutor, optionally to student, record stats.
+    - updateStreakOnBoardAnswer: adjust streak and streak-based multipliers.
+  - Board moderation:
+    - onBoardPostCreate: send text to Claude for moderation & subject verification; update status to approved/rejected.
+    - onBoardAnswerAccepted: award points, update leaderboard and streaks.
+  - SOS:
+    - handleSOS: given a userId and escalation level, look up trusted contacts and/or campus safety numbers, call Twilio to send SMS including approximate zone and a short description.
+    - flagUserOnSOS: optionally flag the other party in an SOS-associated session, increment violation counters, and trigger review or automatic removal on repeated incidents.
+  - Notifications:
+    - sendPushOnTagAssigned / TagPassed / TagHot: send FCM messages to eligible users and current holders.
+    - sendStreakReminder: daily reminders to maintain streaks.
+
+2.3 AI / Moderation Layer (Claude)
+- Runs inside Cloud Functions, not on-device.
+- Responsibilities:
+  - Board moderation:
+    - Classify if a post is:
+      - On-topic (academic / allowed subject).
+      - Inappropriate / abusive / cheating attempt.
+    - If inappropriate, mark as rejected and optionally log for admin review.
+  - Subject and tag verification:
+    - Ensure subject and topic fields align and are understandable.
+    - Optionally enrich tags with keywords to improve matching.
+  - Matching assistance:
+    - Suggest which students (based on history, classes, performance) are best suited for a tag or board post.
+
+2.4 Communications Layer (Twilio)
+- Handles SMS for:
+  - SOS events to trusted contacts.
+  - Optional escalation to campus safety / police (via dedicated numbers).
+- Triggered exclusively from secure Cloud Functions.
+
+2.5 Maps & Location (Google Maps)
+- Used in the mobile app to draw a campus map with:
+  - Zones (imprecise boundaries).
+  - Active tag bubbles positioned within zones.
+- The app:
+  - Requests user location (with permission).
+  - Maps GPS to a zoneId (on device or via backend).
+  - Sends only the zoneId to Firestore; raw coordinates can be dropped for privacy.
+
+
+3. Data & Privacy Model
+-----------------------
+
+- No precise location sharing:
+  - Users are mapped to zones (e.g., "Library", "Engineering Quad"), not exact coordinates.
+  - Tags and sessions are stored by zoneId.
+- Minimal PII:
+  - Required: name, school email, classification, trusted contacts' phone numbers.
+  - Optional: hobbies, languages.
+- Safety flags:
+  - sosEvents and user statusFlags allow admins to monitor repeat issues.
+  - Automatic enforcement (e.g., two strikes) can be handled in Cloud Functions.
+
+
+4. Key Flows (End-to-End)
+-------------------------
+
+4.1 Send a Tag
+- Mobile:
+  - User opens "Send a Tag".
+  - Enters subject, topic, urgency.
+  - Client fetches current zoneId and user profile; calls createTag HTTPS function.
+  - On success, app starts sonar animation and subscribes to that tag document.
+- Backend:
+  - createTag validates user, subject, and zone.
+  - Computes eligibleUserIds based on classesPassed and languages.
+  - Writes new tag in Firestore and triggers notifications to eligible users.
+
+4.2 Accept / Pass Tag
+- Mobile:
+  - Eligible users see relevant bubbles on Live Tags.
+  - Tapping a bubble shows details and "Catch It" (accept) button.
+  - Accept or Pass calls respective Cloud Functions.
+- Backend:
+  - acceptTag re-checks eligibility and time window, updates tag status, and creates/updates a session.
+  - passTag increments passCount, updates rewardMultiplier, and selects new eligible recipients; triggers updated notifications and map state.
+
+4.3 Board Q&A
+- Mobile:
+  - Student posts a short question (≤ 280 chars) with subject.
+  - Post is optimistically displayed with "pending" status.
+- Backend:
+  - onBoardPostCreate calls Claude to moderate and verify subject.
+  - If approved, status updates to "approved" and shows in relevant feeds.
+  - Answers are stored in boardAnswers; accepted answer awards points and updates streaks.
+
+4.4 SOS
+- Mobile:
+  - User long-presses SOS button; client sends SOS request with userId and zoneId.
+- Backend:
+  - handleSOS looks up trusted contacts and/or campus safety numbers.
+  - Sends SMS via Twilio with approximate location and standard message.
+  - Creates sosEvent document and may increment flags on related users.
+
+
+5. Deployment & Environments
+----------------------------
+
+- Mobile App:
+  - Built and deployed via Expo (development builds for testing, EAS for production).
+- Firebase:
+  - Single project with:
+    - Auth, Firestore, Functions, Storage, and FCM.
+  - Separate dev / prod environments can be introduced by using multiple Firebase projects.
+- Configuration:
+  - Campus-specific settings (zones, safe spots, campus safety contacts) stored in Firestore config documents, not hard-coded in the app.
+

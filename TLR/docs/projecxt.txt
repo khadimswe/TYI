@@ -1,0 +1,50 @@
+ A living campus network where help finds you.
+
+
+ Tag You're It turns peer tutoring into a game. When you're stuck, you tag the nearest verified student in your subject — they have 15 minutes to accept or pass it to the next person, just like tag. But here's the twist: every pass raises the reward. A tag that's been passed five times is worth five times the points and suddenly everyone wants to catch it. Sessions happen at safe campus spots, and tutors cash out points for real campus rewards like dining dollars, swipes, and bookstore discounts. No scheduling, no cold emails, no waiting — just students finding students, and the longer the chase, the bigger the payoff. (You can learn hobbies, business ideas,
+
+ Flow->
+ User opens app, gets greeted with what’s your name, classification, and school email, goes through email verification method to make sure student goes to school, while also verifying if school email is valid. Next page gets prompted what classes are they taking, and what classes have they took before with a grade B+ or higher (perhaps transcript verification needed) then ask for any hobbies, and what language they speak (for international students).  Then taken to the homepage where they see the leaderboard at their school, which shows the top students who have been helpful, and, they can see hot topics that have been helped with that day perhaps or it could show popular tags that’s going around near them that are related to their majors or classes their taking, or the classes that they already passed. With their profile in the top left corner and points they currently in the top right. On the bottom of the screen perhaps 3  buttons on the button Send a Tag, Live Tags, Cash out (points for swipes and meals).  
+
+ Step-by-Step:
+ 1.	Name, classification, school email
+ 2.	Email verification
+ 3.	Classes taking + classes passed with B+ or higher
+ 4.	Hobbies + language preference
+ 5.	Trusted contact set up, one/two persons, verified number
+ 6.	Brief 3 screen onboarding animation showing how tagging and points work
+ 7.	Homepage — leaderboard, live tags, points top right, profile top left
+
+ HomePage-
+
+
+
+ Send a Tag — The Launch Screen: Student types their request — subject, topic, urgency. Hits send and watches an animated tag pulse outward from their location like a sonar wave hitting the map, searching for nearby verified students. It looks like it's being shot out into the world looking for someone. That animation alone will make judges put their phones down and watch.
+
+
+ HomeScreen Live Tags- 
+ Where the unprecise location bubbles live. Like a living breathing map of your campus with:
+ •	Colored bubbles showing active tags near you by subject — red for math, green for computer science, orange for accounting.
+ •	Bubble size grows the more times it's been passed — a hot tag is visually bigger and more tempting to catch
+ •	Your qualified tags pulse slightly to signal you're eligible to catch them
+ •	Tap a bubble, see the subject, topic, reward level, and how many times it's been passed
+ •	One button — Catch It
+ The Forum — call it "The Board":
+ •	Students post quick questions — 280 characters max, keeps it tight
+ •	Verified students in that subject see it in their feed
+ •	First correct answer voted up by the asker earns points
+ •	Quick answers take 2 minutes, small points, low friction
+ •	Builds a daily habit loop — open app, answer two questions, earn points, check leaderboard
+ The streak mechanic: Answer one question every day and maintain a streak. Lose the streak and lose bonus multiplier on points. Snapchat proved streaks are the most addictive retention tool ever built.
+ The "On Fire" badge: Answer 5 questions in one day and get an On Fire badge on your leaderboard profile. Visible to everyone. Pure vanity but it works.
+
+
+
+
+ Additional features:
+ Possible DMs for natural follow up after a session, for possible networking
+ OR
+ Session Threads: After the session is done, both of the users can unlock a message thread that is tied to that session. An continuation of the help that happened in a more verified context. Maybe after 2 completed sessions with the same person, they can connect fully and add each other as a campus contacts (or lead them to linkedin). That way relationships can build naturally through repeated help. 
+
+ SOS feature and bad meet-ups: We could implement a one tap SOS feature, when a encounter seems fishy or something is going wrong, they can do a one tap SOS to a trusted contact with GPS ping, or escalate it campus police with two taps. While also automatically flagging the helpers’ profile, it then gets reviewed and they student can potentially get removed from the platform, two flags and they’re automatically out.
+

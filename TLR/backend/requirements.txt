@@ -1,0 +1,14 @@
+
+# This is a reference list for npm/yarn installs inside backend/functions.
+# Do NOT run "pip install -r requirements.txt" on this file.
+# Core Firebase Functions
+firebase-functions
+firebase-admin
+# HTTP client (for Claude, Twilio, etc.)
+axios
+# Integrations
+twilio
+openai     
+
+
+
