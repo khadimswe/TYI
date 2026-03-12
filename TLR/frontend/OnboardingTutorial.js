@@ -44,7 +44,7 @@ export default function OnboardingTutorial({ navigation }) {
       if (step < tutorials.length - 1) {
         setStep(step + 1);
       } else {
-        navigation.navigate('Homepage');
+        navigation.navigate('MainApp');
       }
       Animated.timing(fadeAnim, {
         toValue: 1,
