@@ -90,7 +90,6 @@ export default function Homepage({ navigation }) {
         {/* Midterm Rush Banner */}
         <View style={styles.banner}>
           <View style={styles.bannerRow}>
-            <Text style={styles.bannerIcon}>🔥</Text>
             <Text style={styles.bannerTitle}>MIDTERM RUSH EVENT</Text>
           </View>
           <Text style={styles.bannerSubtitle}>
@@ -107,8 +106,8 @@ export default function Homepage({ navigation }) {
         </View>
 
         {/* Leaderboard Shortcut */}
-        <TouchableOpacity style={styles.leaderboardCard}>
-          <View style={styles.leaderboardLeft}>
+            <TouchableOpacity style={styles.leaderboardCard} onPress={() => navigation.jumpTo('Leaderboard')}>          
+                <View style={styles.leaderboardLeft}>
             <Text style={styles.leaderboardIcon}>🏆</Text>
             <View>
               <Text style={styles.leaderboardTitle}>Campus Leaderboard</Text>
