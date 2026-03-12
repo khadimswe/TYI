@@ -1,3 +1,4 @@
+import React from 'react';
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import OnboardingScreen from "./OnboardingScreen";
@@ -6,7 +7,7 @@ import OnboardingClasses from "./OnboardingClasses";
 import OnboardingHobbies from "./OnboardingHobbies";
 import OnboardingTrustedContact from "./OnboardingTrustedContact";
 import OnboardingTutorial from "./OnboardingTutorial";
-import Homepage from "./Homepage";
+import MainApp from "./MainApp";
 
 const Stack = createStackNavigator();
 
@@ -26,8 +27,7 @@ export default function App() {
         <Stack.Screen name="OnboardingHobbies" component={OnboardingHobbies} />
         <Stack.Screen name="OnboardingTrustedContact" component={OnboardingTrustedContact} />
         <Stack.Screen name="OnboardingTutorial" component={OnboardingTutorial} />
-        <Stack.Screen name="Homepage" component={Homepage} />
-
+        <Stack.Screen name="MainApp" component={MainApp} />
       </Stack.Navigator>
     </NavigationContainer>
   );
