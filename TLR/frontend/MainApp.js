@@ -8,7 +8,6 @@ import {
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Homepage from './Homepage';
 import SendTag from './SendTag';
-import LiveTags from './LiveTags';
 import Board from './Board';
 import Leaderboard from './Leaderboard';
 import CashOut from './CashOut';
@@ -42,11 +41,10 @@ export default function MainApp() {
       })}
     >
       <Tab.Screen name="Home" component={Homepage} />
-    {<Tab.Screen name="SendTag" component={SendTag} options={{ tabBarLabel: 'Send Tag' }} />}
-   {<Tab.Screen name="LiveTags" component={LiveTags} options={{ tabBarLabel: 'Live Tags' }} />}
-      {<Tab.Screen name="Board" component={Board} />}
-      {<Tab.Screen name="Leaderboard" component={Leaderboard} />}
-      {<Tab.Screen name="CashOut" component={CashOut} options={{ tabBarLabel: 'Cash Out' }} />}
+      <Tab.Screen name="SendTag" component={SendTag} options={{ tabBarLabel: 'Send Tag' }} />
+      <Tab.Screen name="Board" component={Board} />
+      <Tab.Screen name="Leaderboard" component={Leaderboard} />
+      <Tab.Screen name="CashOut" component={CashOut} options={{ tabBarLabel: 'Cash Out' }} />
     </Tab.Navigator>
   );
 }
