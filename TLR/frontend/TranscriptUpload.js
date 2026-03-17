@@ -1,31 +1,30 @@
 import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
-  SafeAreaView, ScrollView, ActivityIndicator,
+  SafeAreaView, ScrollView, ActivityIndicator, Alert,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
-
-// TODO: Replace with courses actually pulled from OnboardingClasses state / Supabase
-const MOCK_VERIFIED_COURSES = ['CALC 2401', 'CHEM 1211', 'ECON 2105', 'CS 1301'];
+import { uploadTranscript } from './api';
 
 export default function TranscriptUpload({ navigation }) {
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [verified, setVerified] = useState(false);
   const [pickError, setPickError] = useState(null);
+  const [result, setResult] = useState(null);
 
   const handlePickFile = async () => {
     setPickError(null);
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/pdf', 'image/jpeg', 'image/png'],
+      const res = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf'],
         copyToCacheDirectory: true,
       });
 
       // expo-document-picker v11+ returns { canceled, assets }
-      if (!result.canceled && result.assets && result.assets.length > 0) {
-        const picked = result.assets[0];
+      if (!res.canceled && res.assets && res.assets.length > 0) {
+        const picked = res.assets[0];
         setFile({ name: picked.name, uri: picked.uri, size: picked.size });
       }
     } catch (err) {
@@ -33,15 +32,26 @@ export default function TranscriptUpload({ navigation }) {
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return;
     setUploading(true);
-    // TODO: Replace setTimeout with real Supabase storage upload + transcript parsing
-    setTimeout(() => {
+    try {
+      // TODO: replace hardcoded user_id with real user context
+      const userId = 'TEMP_USER_ID';
+      const data = await uploadTranscript(file.uri, file.name, userId);
+      setResult(data);
+      if (data.success) {
+        setVerified(true);
+        setTimeout(() => navigation.navigate('OnboardingHobbies'), 2500);
+      } else {
+        Alert.alert('Upload Failed', data.message || 'Could not process transcript');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Could not connect to the server');
+      console.error(err);
+    } finally {
       setUploading(false);
-      setVerified(true);
-      setTimeout(() => navigation.navigate('OnboardingHobbies'), 2500);
-    }, 2000);
+    }
   };
 
   const handleSkip = () => navigation.navigate('OnboardingHobbies');

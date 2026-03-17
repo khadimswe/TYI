@@ -1,0 +1,151 @@
+{
+  "name": "TYI - Login Verification",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "9cf9c699-8302-42b1-bcb1-cee0d396803d",
+        "options": {}
+      },
+      "id": "c9b7f23e-f8cc-4320-8dcb-f8cc295c5e58",
+      "name": "Login",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-1424, 1232],
+      "webhookId": "9cf9c699-8302-42b1-bcb1-cee0d396803d"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2a474411-4e87-4107-b95b-0d2632cb4a96",
+              "name": "identifier",
+              "value": "={{$json.body.identifier}}",
+              "type": "string"
+            },
+            {
+              "id": "1e77c469-ed88-4bd7-9850-ce5237a92373",
+              "name": "password",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "f7e743ef-a04b-4ff9-8a45-3d7d8362e691",
+              "name": "submittedPassword",
+              "value": "={{$json.body.password}}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": { "dotNotation": false }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [-960, 1232],
+      "id": "f6767e98-edde-486d-be47-64ad93cebcbd",
+      "name": "takes in identifier + password entered"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 2,
+      "position": [-1184, 1232],
+      "id": "0c089f9d-9322-4f1a-b015-f81d84454d0e",
+      "name": "passsword + identifier hashing"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = ($json.identifier || \"\").trim();\nconst phone = raw.replace(/\\D/g, '');\nreturn [{ json: { ...$json, identifier: raw.toLowerCase(), phoneDigits: phone } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-752, 1232],
+      "id": "c5f7b229-7e72-4336-b3e1-9c4af8ba224f",
+      "name": "true number"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, username, email, phone, password\nFROM accountInfo\nWHERE LOWER(username) = LOWER($1)\n   OR LOWER(email) = LOWER($1)\n   OR phone = $2\nLIMIT 1;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [-544, 1232],
+      "id": "c641a8cd-5645-4952-a53f-7ab9ee131a67",
+      "name": "checking db for identifier"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [
+            {
+              "id": "eed561f4-22c1-482b-ac39-a54a2dae3b3f",
+              "leftValue": "{{#json.id}}",
+              "rightValue": "is not empty",
+              "operator": { "type": "object", "operation": "notEmpty", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [-336, 1232],
+      "id": "ccfef74a-7fb2-4a87-8834-f1c2b36bc116",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const submittedPassword = $json.submittedPassword;\nconst storedPassword = $json.password;\nconst passwordValid = submittedPassword === storedPassword;\nreturn [{ json: { ...$json, passwordValid: passwordValid } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-128, 1104],
+      "id": "fc941d30-ab2e-4930-bb4f-73b5b6cce698",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"message\": \"Invalid credentials\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [-128, 1376],
+      "id": "fb6230c6-fb56-4d85-b1ec-afb14375e659",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Login": {
+      "main": [[]]
+    },
+    "takes in identifier + password entered": {
+      "main": [[{ "node": "true number", "type": "main", "index": 0 }]]
+    },
+    "true number": {
+      "main": [[{ "node": "checking db for identifier", "type": "main", "index": 0 }]]
+    },
+    "checking db for identifier": {
+      "main": [[{ "node": "If", "type": "main", "index": 0 }]]
+    },
+    "If": {
+      "main": [
+        [{ "node": "Code in JavaScript3", "type": "main", "index": 0 }],
+        [{ "node": "Respond to Webhook", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": true },
+  "tags": [{ "name": "auth" }, { "name": "login" }]
+}

@@ -1,0 +1,202 @@
+{
+  "name": "TYI - Schedule Submission",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "ClassSchedule",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "pdf",
+              "fieldType": "file",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [-944, 640],
+      "id": "d9cb5d5e-06b9-48bd-8af1-56e342da5eae",
+      "name": "On form submission1",
+      "webhookId": "69338968-2c1f-4084-aed0-3ed1bf049953"
+    },
+    {
+      "parameters": {
+        "path": "8641d142-767c-4d56-a302-1afabf41acff",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-1408, 640],
+      "id": "d398541e-eabc-4161-bc4e-8556ab725f1c",
+      "name": "Webhook1",
+      "webhookId": "8641d142-767c-4d56-a302-1afabf41acff"
+    },
+    {
+      "parameters": {
+        "action": "hmac"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 2,
+      "position": [-1152, 640],
+      "id": "7c8b9bc7-17c4-40ce-b04d-068a3c63ff9d",
+      "name": "for file hasing"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [-720, 544],
+      "id": "593d7fe3-777d-4947-9b71-116288277276",
+      "name": "Extract from schedule"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "pdf",
+        "name": "ClassSchedule",
+        "driveId": { "__rl": true, "mode": "list", "value": "My Drive" },
+        "folderId": { "__rl": true, "mode": "list", "value": "root", "cachedResultName": "/ (Root folder)" },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [-720, 736],
+      "id": "299725b6-0021-4c5e-bc5a-08436ae87014",
+      "name": "Upload file1",
+      "credentials": {
+        "googleDriveOAuth2Api": { "id": "4bEjiEB0xF2mdNDw", "name": "Google Drive account" }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [-496, 640],
+      "id": "66ba901c-0da0-49ac-bb81-c94ee603ee3b",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "modelId": { "__rl": true, "value": "gpt-4.1-mini", "mode": "id" },
+        "responses": {
+          "values": [
+            {
+              "content": "=task. you are a professional transcript analyzer. Do not hallucinate or make up input data. if you cannot find data for specific feilds leave blank. use your best judgement.\n\nUsing the input provided in {{ $json.text }}, extract and return a clean json object with the following structure \n\n'''json\n{\n  \"assignments\": [\n    {\n      \"assignment\": \"\",\n      \"start_date\": \"\",\n      \"due_date\": \"\",\n      \"details\": \"\",\n      \"type\": \"\"\n    }\n  ]\n}'''\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": { "textOptions": { "type": "=json_object", "verbosity": "=medium" } }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [-272, 640],
+      "id": "7846f114-3575-46e1-b9b1-9e5a3095c8ff",
+      "name": "Message a model1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "openAiApi": { "id": "HAbSfT0oVYvT9yZk", "name": "OpenAi account" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  const assignments = item.json.output?.[0]?.content?.[0]?.text?.assignments;\n  if (Array.isArray(assignments)) {\n    for (const assignment of assignments) {\n      assignment.start_date = assignment.start_date ? new Date(assignment.start_date).toISOString() : null;\n      assignment.due_date = assignment.due_date ? new Date(assignment.due_date).toISOString() : null;\n    }\n  }\n}\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [80, 640],
+      "id": "b113a7f9-134b-49b6-a9f6-6aeeb72a4a2a",
+      "name": "Code in JavaScript1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "UyH4035k8jjF3VJJ",
+          "mode": "list",
+          "cachedResultName": "CalandarInfo",
+          "cachedResultUrl": "/projects/i9VW9fxcZqHUOh16/datatables/UyH4035k8jjF3VJJ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "assignment": "={{ $json.output[0].content[0].text.assignments[1].assignment }}",
+            "start_date": "={{ $json.output[0].content[0].text.assignments[1].start_date }}",
+            "end_date": "={{ $json.output[0].content[0].text.assignments[1].due_date }}",
+            "type": "={{ $json.output[0].content[0].text.assignments[1].type }}",
+            "details": "={{ $json.output[0].content[0].text.assignments[1].details }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "assignment", "displayName": "assignment", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "type", "displayName": "type", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "details", "displayName": "details", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "start_date", "displayName": "start_date", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "end_date", "displayName": "end_date", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [304, 640],
+      "id": "114d3b04-7aed-4608-9797-a78a46545a2a",
+      "name": "Insert row2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"message\": \"Invalid credentials\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [528, 640],
+      "id": "ea662bb7-f0d7-47f9-bf8d-78a7c15ad9ed",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission1": {
+      "main": [[
+        { "node": "Upload file1", "type": "main", "index": 0 },
+        { "node": "Extract from schedule", "type": "main", "index": 0 }
+      ]]
+    },
+    "Extract from schedule": {
+      "main": [[{ "node": "Merge1", "type": "main", "index": 0 }]]
+    },
+    "Upload file1": {
+      "main": [[{ "node": "Merge1", "type": "main", "index": 1 }]]
+    },
+    "Merge1": {
+      "main": [[{ "node": "Message a model1", "type": "main", "index": 0 }]]
+    },
+    "Message a model1": {
+      "main": [[{ "node": "Code in JavaScript1", "type": "main", "index": 0 }]]
+    },
+    "Code in JavaScript1": {
+      "main": [[{ "node": "Insert row2", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1", "binaryMode": "separate" },
+  "meta": { "templateCredsSetupCompleted": true },
+  "tags": [{ "name": "verification" }, { "name": "schedule" }]
+}
