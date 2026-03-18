@@ -35,7 +35,6 @@ export default function Leaderboard() {
       <ScrollView contentContainerStyle={styles.scroll}>
 
         <View style={styles.headerRow}>
-          <Text style={styles.trophyIcon}>🏆</Text>
           <View>
             <Text style={styles.title}>Campus Leaderboard</Text>
             <Text style={styles.subtitle}>Top helpers at your school</Text>

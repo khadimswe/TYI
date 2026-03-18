@@ -1,0 +1,388 @@
+{
+  "name": "TYI - Transcript Submission",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "PDF upload ",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "pdf",
+              "fieldType": "file",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [-848, 32],
+      "id": "7b03173d-783a-4523-b504-4c13cec7e182",
+      "name": "On form submission",
+      "webhookId": "0a5a9864-3761-4bd2-909a-8f36f1106a1c"
+    },
+    {
+      "parameters": {
+        "path": "ca8a7c70-d30d-407e-997c-f463755d112d",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [-1120, 32],
+      "id": "dd9fed38-d354-4834-ab43-e542d759f6e5",
+      "name": "Webhook",
+      "webhookId": "ca8a7c70-d30d-407e-997c-f463755d112d"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [-624, -64],
+      "id": "0ef9d3b8-e36f-483a-b2fd-7c009fe3691d",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "pdf",
+        "name": "transcripts",
+        "driveId": { "__rl": true, "mode": "list", "value": "My Drive" },
+        "folderId": { "__rl": true, "mode": "list", "value": "root", "cachedResultName": "/ (Root folder)" },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [-624, 128],
+      "id": "d333b5e1-4682-4489-b548-fac55cb0fe03",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": { "id": "4bEjiEB0xF2mdNDw", "name": "Google Drive account" }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [-400, 32],
+      "id": "94a1a08e-221a-45f7-9c3d-a72f1e265986",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "modelId": { "__rl": true, "value": "gpt-4.1-mini", "mode": "id" },
+        "responses": {
+          "values": [
+            {
+              "content": "=task. you are a professional transcript analyzer. Do not hallucinate or make up input data. if you cannot find data for specific feilds leave blank. use your best judgement.\n\nUsing the input provided in {{ $json.text }}, extract and return a clean json object with the following structure \n\n'''json\n{\n\"StudentInformation_Name\": \"\",\n\"StudentInformation_CurrentProgram\": \"\",\n\"InstatutionCredit_CoursesTaken\":[\n{\n\"CourseTakenTitle\": \"\",\n\"CourseTakenGrade\": \"\",\n}\n],\n\"TotalInstitution_AttemptedHours\": \"\",\n\"TotalInstitution_PassedHours\": \"\",\n\"TotalInstitution_GPA\": \"\",\n\"CoursesInProgress_Title\": []\n}\n\n"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {
+          "textFormat": { "textOptions": { "type": "=json_object", "verbosity": "=medium" } }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [-176, 32],
+      "id": "e6a738c1-fe4d-4ab0-bb7e-8ee3f90fb033",
+      "name": "Message a model",
+      "alwaysOutputData": true,
+      "credentials": {
+        "openAiApi": { "id": "HAbSfT0oVYvT9yZk", "name": "OpenAi account" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  const data = item.json.output[0].content[0].text;\n  data.TotalInstitution_GPA = Number(data.TotalInstitution_GPA);\n  data.TotalInstitution_PassedHours = Number(data.TotalInstitution_PassedHours);\n  data.TotalInstitution_AttemptedHours = Number(data.TotalInstitution_AttemptedHours);\n}\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [176, 32],
+      "id": "eae21e5d-8bb9-45a4-a73e-84ce6254cf96",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [
+            {
+              "id": "17a27616-1c9c-43a0-9275-10f5fb2fd4fe",
+              "leftValue": "={{ $json.output[0].content[0].text.TotalInstitution_GPA }}",
+              "rightValue": 3,
+              "operator": { "type": "number", "operation": "gte" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [400, 32],
+      "id": "d8d56a7b-c748-4895-8189-f95e3802d8c4",
+      "name": "If gpa >= 3.0"
+    },
+    {
+      "parameters": {
+        "dataTableId": { "__rl": true, "mode": "name", "value": "=tutoringApproval" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "CurrentGPA": "={{ $json.output[0].content[0].text.TotalInstitution_GPA }}",
+            "name": "={{ $json.output[0].content[0].text.StudentInformation_Name }}",
+            "degree": "={{ $json.output[0].content[0].text.StudentInformation_CurrentProgram }}",
+            "approvedGPA": "={{ true }}",
+            "CourseTakenTitle": "={{ $json.output[0].content[0].text.InstatutionCredit_CoursesTaken.map(c => c.CourseTakenTitle).join(\", \") }}",
+            "CourseTakenGrade": "={{ $json.output[0].content[0].text.InstatutionCredit_CoursesTaken.map(c => c.CourseTakenGrade).join(\", \") }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "name", "displayName": "name", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "degree", "displayName": "degree", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "CurrentGPA", "displayName": "CurrentGPA", "required": false, "defaultMatch": false, "display": true, "type": "number", "readOnly": false, "removed": false },
+            { "id": "approvedGPA", "displayName": "approvedGPA", "required": false, "defaultMatch": false, "display": true, "type": "boolean", "readOnly": false, "removed": false },
+            { "id": "CourseTakenTitle", "displayName": "CourseTakenTitle", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "CourseTakenGrade", "displayName": "CourseTakenGrade", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [624, -64],
+      "id": "ac92c1b7-18fa-4d76-9119-51cef62e2c50",
+      "name": "approvedForTutoring"
+    },
+    {
+      "parameters": {
+        "dataTableId": { "__rl": true, "mode": "name", "value": "=tutoringApproval" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "approvedGPA": false,
+            "CurrentGPA": "={{ $json.output[0].content[0].text.TotalInstitution_GPA }}",
+            "degree": "={{ $json.output[0].content[0].text.StudentInformation_CurrentProgram }}",
+            "name": "={{ $json.output[0].content[0].text.StudentInformation_Name }}",
+            "CourseTakenTitle": "={{ $json.output[0].content[0].text.InstatutionCredit_CoursesTaken.map(c => c.CourseTakenTitle).join(\", \") }}",
+            "CourseTakenGrade": "={{ $json.output[0].content[0].text.InstatutionCredit_CoursesTaken.map(c => c.CourseTakenGrade).join(\", \") }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "name", "displayName": "name", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "degree", "displayName": "degree", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "CurrentGPA", "displayName": "CurrentGPA", "required": false, "defaultMatch": false, "display": true, "type": "number", "readOnly": false, "removed": false },
+            { "id": "approvedGPA", "displayName": "approvedGPA", "required": false, "defaultMatch": false, "display": true, "type": "boolean", "readOnly": false, "removed": false },
+            { "id": "CourseTakenTitle", "displayName": "CourseTakenTitle", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "CourseTakenGrade", "displayName": "CourseTakenGrade", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [624, 128],
+      "id": "2f32aec0-f305-40ee-bcf4-d4bcc437b5a4",
+      "name": "deniedTutoring"
+    },
+    {
+      "parameters": {
+        "jsCode": "for (const item of $input.all()) {\n  item.json.CourseTakenTitle = item.json.CourseTakenTitle.split(\",\").map(c => c.trim());\n  item.json.CourseTakenGrade = item.json.CourseTakenGrade.split(\",\").map(g => g.trim());\n}\nreturn $input.all();"
+      },
+      "id": "62c1d945-5acd-4d68-a834-674778c7ad46",
+      "name": "strings to arrays",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [816, -64]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nconst titles = item.json.CourseTakenTitle;\nconst grades = item.json.CourseTakenGrade;\nitem.json.courses = titles.map((title, i) => ({ course: title, grade: grades[i] || null }));\nreturn item;"
+      },
+      "id": "813f9a43-d876-4109-b697-95fedc857658",
+      "name": "combining arrays",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1008, -64]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "=courses",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "={{ $(\"approvedForTutoring\").item.json.name }}",
+        "options": {}
+      },
+      "id": "34d0ff79-52d9-4e45-b6b8-40db73d616e5",
+      "name": "Split Courses",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [1232, -64]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const item = $input.item;\nitem.json.course = item.json.courses.course;\nitem.json.grade = item.json.courses.grade;\ndelete item.json.courses;\nreturn item;"
+      },
+      "id": "2f2aecbd-b540-43b2-b357-dc7f65208873",
+      "name": "coursesTableGen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1456, -64]
+    },
+    {
+      "parameters": {
+        "dataTableId": { "__rl": true, "value": "=TutoringClasses", "mode": "name" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('approvedForTutoring').item.json.name }}",
+            "class_name": "={{ $json.course }}",
+            "class_grade": "={{ $json.grade }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "name", "displayName": "name", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "class_name", "displayName": "class_name", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "class_grade", "displayName": "class_grade", "required": false, "defaultMatch": false, "display": true, "type": "string", "readOnly": false, "removed": false },
+            { "id": "CanTutorSubject", "displayName": "CanTutorSubject", "required": false, "defaultMatch": false, "display": true, "type": "boolean", "readOnly": false, "removed": true }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [1696, -64],
+      "id": "5e0482b5-f5c7-4197-83e7-0a4e14276318",
+      "name": "approvedForTutoring1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 3 },
+          "conditions": [
+            {
+              "id": "17a27616-1c9c-43a0-9275-10f5fb2fd4fe",
+              "leftValue": "={{ $('Split Courses').item.json.courses.grade }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "contains" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [1936, -64],
+      "id": "582f44b2-da08-4cc1-9792-33658402852a",
+      "name": "If gpa >= 3."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"message\": \"Invalid credentials\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [848, 128],
+      "id": "ba2bd9e6-da4a-4d73-92a5-2e884e437d55",
+      "name": "Respond to Webhook2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"message\": \"Invalid credentials\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [2160, -176],
+      "id": "562e20cb-6cb3-44ab-a488-49bb0acfc7aa",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"message\": \"Invalid credentials\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [2176, 64],
+      "id": "2ee3b6bc-7034-4bfd-baa2-a61f3fcc62df",
+      "name": "Respond to Webhook4"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [[
+        { "node": "Extract from File", "type": "main", "index": 0 },
+        { "node": "Upload file", "type": "main", "index": 0 }
+      ]]
+    },
+    "Extract from File": {
+      "main": [[{ "node": "Merge", "type": "main", "index": 0 }]]
+    },
+    "Upload file": {
+      "main": [[{ "node": "Merge", "type": "main", "index": 1 }]]
+    },
+    "Merge": {
+      "main": [[{ "node": "Message a model", "type": "main", "index": 0 }]]
+    },
+    "Message a model": {
+      "main": [[{ "node": "Code in JavaScript", "type": "main", "index": 0 }]]
+    },
+    "Code in JavaScript": {
+      "main": [[{ "node": "If gpa >= 3.0", "type": "main", "index": 0 }]]
+    },
+    "If gpa >= 3.0": {
+      "main": [
+        [{ "node": "approvedForTutoring", "type": "main", "index": 0 }],
+        [{ "node": "deniedTutoring", "type": "main", "index": 0 }]
+      ]
+    },
+    "approvedForTutoring": {
+      "main": [[{ "node": "strings to arrays", "type": "main", "index": 0 }]]
+    },
+    "deniedTutoring": {
+      "main": [[]]
+    },
+    "strings to arrays": {
+      "main": [[{ "node": "combining arrays", "type": "main", "index": 0 }]]
+    },
+    "combining arrays": {
+      "main": [[{ "node": "Split Courses", "type": "main", "index": 0 }]]
+    },
+    "Split Courses": {
+      "main": [[{ "node": "coursesTableGen", "type": "main", "index": 0 }]]
+    },
+    "coursesTableGen": {
+      "main": [[{ "node": "approvedForTutoring1", "type": "main", "index": 0 }]]
+    },
+    "approvedForTutoring1": {
+      "main": [[{ "node": "If gpa >= 3.", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1", "binaryMode": "separate" },
+  "meta": { "templateCredsSetupCompleted": true },
+  "tags": [{ "name": "verification" }, { "name": "transcript" }]
+}
