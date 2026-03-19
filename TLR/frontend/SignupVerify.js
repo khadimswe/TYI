@@ -10,8 +10,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { useSignup } from './context/SignupContext';
 
 export default function SignupVerify({ navigation }) {
+  const { updateSignup } = useSignup();
   const [step, setStep] = useState('choose');
   const [method, setMethod] = useState(null);
   const [contact, setContact] = useState('');
@@ -43,6 +45,12 @@ export default function SignupVerify({ navigation }) {
 
   const handleVerify = () => {
     if (code.length === 6) {
+      // Save verified contact info to signup context
+      if (method === 'email') {
+        updateSignup({ email: contact });
+      } else {
+        updateSignup({ phone: contact });
+      }
       navigation.navigate('CreateAccount');
     }
   };

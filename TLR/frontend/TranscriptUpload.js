@@ -6,8 +6,10 @@ import {
 import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { uploadTranscript } from './api';
+import { useSignup } from './context/SignupContext';
 
 export default function TranscriptUpload({ navigation }) {
+  const { signupData } = useSignup();
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [verified, setVerified] = useState(false);
@@ -25,7 +27,13 @@ export default function TranscriptUpload({ navigation }) {
       // expo-document-picker v11+ returns { canceled, assets }
       if (!res.canceled && res.assets && res.assets.length > 0) {
         const picked = res.assets[0];
-        setFile({ name: picked.name, uri: picked.uri, size: picked.size });
+        setFile({
+          name: picked.name,
+          uri: picked.uri,
+          size: picked.size,
+          // On web, expo-document-picker provides the browser File object
+          webFile: picked.file || null,
+        });
       }
     } catch (err) {
       setPickError('Could not open file picker. Please try again.');
@@ -34,11 +42,18 @@ export default function TranscriptUpload({ navigation }) {
 
   const handleUpload = async () => {
     if (!file) return;
+    console.log('📋 signupData at upload:', JSON.stringify(signupData));
     setUploading(true);
     try {
-      // TODO: replace hardcoded user_id with real user context
-      const userId = 'TEMP_USER_ID';
-      const data = await uploadTranscript(file.uri, file.name, userId);
+      const data = await uploadTranscript(
+        file.uri,
+        file.name,
+        signupData.userId,
+        signupData.email,
+        signupData.username,
+        signupData.password,
+        file.webFile,
+      );
       setResult(data);
       if (data.success) {
         setVerified(true);
@@ -87,7 +102,11 @@ export default function TranscriptUpload({ navigation }) {
               <Ionicons name="checkmark-circle" size={56} color="#22C55E" />
             </View>
             <Text style={styles.successTitle}>Transcript Verified!</Text>
-            <Text style={styles.successSub}>You're now verified to help in these courses:</Text>
+            <Text style={styles.successSub}>
+              {result?.approved
+                ? `GPA: ${result.gpa?.toFixed(2)} — ${result.courses_count || 0} courses verified!`
+                : result?.message || 'Your transcript has been processed.'}
+            </Text>
 
             {/* Badge preview */}
             <View style={styles.badgePreviewBox}>
@@ -96,12 +115,10 @@ export default function TranscriptUpload({ navigation }) {
                 <Text style={styles.badgePreviewTitle}>Your Verified Course Badges</Text>
               </View>
               <View style={styles.badgeRow}>
-                {MOCK_VERIFIED_COURSES.map((course) => (
-                  <View key={course} style={styles.badge}>
-                    <Ionicons name="checkmark-circle" size={12} color="#3B82F6" />
-                    <Text style={styles.badgeText}>{course}</Text>
-                  </View>
-                ))}
+                <View style={styles.badge}>
+                  <Ionicons name="checkmark-circle" size={12} color="#3B82F6" />
+                  <Text style={styles.badgeText}>{result?.courses_count || 0} courses verified</Text>
+                </View>
               </View>
               <Text style={styles.badgeNote}>
                 These will appear on your profile and make you eligible to catch Course Tags

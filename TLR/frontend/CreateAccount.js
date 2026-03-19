@@ -10,8 +10,10 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { useSignup } from './context/SignupContext';
 
 export default function CreateAccount({ navigation }) {
+  const { updateSignup } = useSignup();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -24,6 +26,8 @@ export default function CreateAccount({ navigation }) {
 
   const handleContinue = () => {
     if (!canContinue) return;
+    // Save username and password to signup context
+    updateSignup({ username, password });
     navigation.navigate('OnboardingScreen');
   };
 

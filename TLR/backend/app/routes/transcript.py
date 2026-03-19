@@ -6,6 +6,7 @@ Mirrors the n8n Transcript flow:
   strings to arrays → combining arrays → Split Courses → coursesTableGen →
   Insert into TutoringClasses
 """
+import logging
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 
 from app.config import settings
@@ -14,6 +15,8 @@ from app.models import TranscriptUploadResponse
 from app.services.pdf_service import extract_text_from_pdf
 from app.services.openai_service import parse_transcript
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/api/transcript", tags=["transcript"])
 
 
@@ -21,68 +24,112 @@ router = APIRouter(prefix="/api/transcript", tags=["transcript"])
 async def upload_transcript(
     pdf: UploadFile = File(...),
     user_id: str = Form(...),
+    email: str = Form(""),
+    username: str = Form(""),
+    password: str = Form(""),
 ):
     """
-    1. Extract text from the uploaded PDF
-    2. Send to GPT-4.1-mini for structured parsing
-    3. Evaluate GPA against MIN_TUTOR_GPA
-    4. Write to tutoring_approval
-    5. If approved, split courses and write each to tutoring_classes
+    1. Create the user's account_info row (if it doesn't exist yet)
+    2. Extract text from the uploaded PDF
+    3. Send to GPT-4.1-mini for structured parsing
+    4. Evaluate GPA against MIN_TUTOR_GPA
+    5. Write to tutoring_approval
+    6. If approved, split courses and write each to tutoring_classes
     """
-    if not pdf.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files are accepted")
+    try:
+        if not pdf.filename.lower().endswith(".pdf"):
+            raise HTTPException(status_code=400, detail="Only PDF files are accepted")
 
-    file_bytes = await pdf.read()
-    text = extract_text_from_pdf(file_bytes)
+        sb = get_supabase()
 
-    if not text.strip():
-        raise HTTPException(status_code=422, detail="Could not extract text from PDF")
+        # ── Ensure account_info row exists ───────────────────────────
+        logger.info("👤 Checking if user %s exists...", user_id)
+        existing = sb.table("account_info").select("id").eq("id", user_id).execute()
 
-    # ── GPT parse (mirrors "Message a model" node) ──────────
-    parsed = await parse_transcript(text)
+        if not existing.data:
+            if (not email and not username and not password):
+                raise HTTPException(
+                    status_code=400,
+                    detail="New user requires email, username, and password",
+                )
+            import bcrypt
+            password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+            logger.info("📝 Creating account for %s (%s)...", username, email)
+            sb.table("account_info").insert({
+                "id": user_id,
+                "username": username,
+                "email": email,
+                "password_hash": password_hash,
+            }).execute()
+            logger.info("✅ Account created for %s", username)
+        else:
+            logger.info("✅ User already exists, skipping account creation")
 
-    gpa = parsed.TotalInstitution_GPA or 0.0
-    approved = gpa >= settings.MIN_TUTOR_GPA
+        # ── Extract PDF text ─────────────────────────────────────────
+        logger.info("📄 Reading PDF...")
+        file_bytes = await pdf.read()
+        text = extract_text_from_pdf(file_bytes)
 
-    sb = get_supabase()
+        if not text.strip():
+            raise HTTPException(status_code=422, detail="Could not extract text from PDF")
 
-    # ── Write to tutoring_approval (mirrors approvedForTutoring / deniedTutoring) ──
-    course_titles = ", ".join(c.CourseTakenTitle for c in parsed.InstatutionCredit_CoursesTaken)
-    course_grades = ", ".join(c.CourseTakenGrade for c in parsed.InstatutionCredit_CoursesTaken)
+        # ── GPT parse (mirrors "Message a model" node) ──────────────
+        logger.info("🤖 Sending to GPT for parsing...")
+        parsed = await parse_transcript(text)
 
-    sb.table("tutoring_approval").insert({
-        "user_id": user_id,
-        "name": parsed.StudentInformation_Name,
-        "degree": parsed.StudentInformation_CurrentProgram,
-        "current_gpa": gpa,
-        "approved_gpa": approved,
-        "course_taken_titles": course_titles,
-        "course_taken_grades": course_grades,
-    }).execute()
+        gpa = parsed.TotalInstitution_GPA or 0.0
+        approved = gpa >= settings.MIN_TUTOR_GPA
+        logger.info("📊 GPA: %.2f — %s", gpa, "APPROVED" if approved else "DENIED")
 
-    # ── If approved, write individual courses to tutoring_classes ──
-    #    Mirrors: strings to arrays → combining arrays → Split Courses →
-    #    coursesTableGen → approvedForTutoring1
-    if approved and parsed.InstatutionCredit_CoursesTaken:
-        rows = []
-        for course in parsed.InstatutionCredit_CoursesTaken:
-            grade = course.CourseTakenGrade.strip().upper()
-            # Determine can_tutor: grade is A or B (mirrors the n8n "If gpa >= 3." check on grade)
-            can_tutor = grade in ("A", "A+", "A-", "B", "B+")
-            rows.append({
-                "user_id": user_id,
-                "name": parsed.StudentInformation_Name,
-                "class_name": course.CourseTakenTitle,
-                "class_grade": course.CourseTakenGrade,
-                "can_tutor": can_tutor,
-            })
-        if rows:
-            sb.table("tutoring_classes").insert(rows).execute()
+        # ── Write to tutoring_approval ───────────────────────────────
+        course_titles = ", ".join(c.CourseTakenTitle for c in parsed.InstatutionCredit_CoursesTaken)
+        course_grades = ", ".join(c.CourseTakenGrade for c in parsed.InstatutionCredit_CoursesTaken)
 
-    return TranscriptUploadResponse(
-        success=True,
-        message="Approved for tutoring!" if approved else "GPA below minimum – not approved for tutoring",
-        approved=approved,
-        gpa=gpa,
-        courses_count=len(parsed.InstatutionCredit_CoursesTaken),
-    )
+        sb.table("tutoring_approval").insert({
+            "user_id": user_id,
+            "name": parsed.StudentInformation_Name,
+            "degree": parsed.StudentInformation_CurrentProgram,
+            "current_gpa": gpa,
+            "approved_gpa": approved,
+            "course_taken_titles": course_titles,
+            "course_taken_grades": course_grades,
+        }).execute()
+        logger.info("💾 Wrote tutoring_approval row")
+
+        # ── If approved, write individual courses to tutoring_classes ──
+        verified_courses = []
+        if approved and parsed.InstatutionCredit_CoursesTaken:
+            rows = []
+            for course in parsed.InstatutionCredit_CoursesTaken:
+                grade = course.CourseTakenGrade.strip().upper()
+                can_tutor = grade in ("A", "A+", "A-", "B", "B+")
+                rows.append({
+                    "user_id": user_id,
+                    "name": parsed.StudentInformation_Name,
+                    "class_name": course.CourseTakenTitle,
+                    "class_grade": course.CourseTakenGrade,
+                    "can_tutor": can_tutor,
+                })
+                if can_tutor:
+                    verified_courses.append(course.CourseTakenTitle)
+            if rows:
+                sb.table("tutoring_classes").insert(rows).execute()
+                logger.info("💾 Wrote %d tutoring_classes rows", len(rows))
+
+        logger.info("✅ Transcript upload complete for user %s", user_id)
+        return TranscriptUploadResponse(
+            success=True,
+            message="Approved for tutoring!" if approved else "GPA below minimum – not approved for tutoring",
+            approved=approved,
+            gpa=gpa,
+            courses_count=len(parsed.InstatutionCredit_CoursesTaken),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("❌ Transcript upload failed: %s", str(e))
+        return TranscriptUploadResponse(
+            success=False,
+            message=f"Server error: {str(e)}",
+        )

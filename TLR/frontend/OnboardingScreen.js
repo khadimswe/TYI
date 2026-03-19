@@ -12,6 +12,7 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
+import { useSignup } from './context/SignupContext';
 
 const classifications = ['Freshman', 'Sophomore', 'Junior', 'Senior', 'Graduate Student', 'Alumni'];
 const schools = [
@@ -24,6 +25,7 @@ const schools = [
 ];
 
 export default function OnboardingScreen({ navigation }) {
+  const { updateSignup } = useSignup();
   const [name, setName] = useState('');
   const [classification, setClassification] = useState('');
   const [school, setSchool] = useState('');
@@ -88,7 +90,12 @@ export default function OnboardingScreen({ navigation }) {
 
           <TouchableOpacity
             style={[styles.button, !canContinue && styles.buttonDisabled]}
-            onPress={() => canContinue && navigation.navigate('OnboardingClasses')}
+            onPress={() => {
+              if (canContinue) {
+                updateSignup({ name, classification, school });
+                navigation.navigate('OnboardingClasses');
+              }
+            }}
             disabled={!canContinue}
           >
             <Text style={styles.buttonText}>Continue</Text>

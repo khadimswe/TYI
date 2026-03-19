@@ -41,16 +41,27 @@ export async function signupUser({ username, email, phoneNumber, password }) {
 
 /**
  * Upload a transcript PDF for parsing + tutoring approval.
+ * Also sends signup info so the backend can create the user's account.
  * Maps to: POST /api/transcript/upload
  */
-export async function uploadTranscript(fileUri, fileName, userId) {
+export async function uploadTranscript(fileUri, fileName, userId, email, username, password, webFile) {
   const formData = new FormData();
-  formData.append('pdf', {
-    uri: fileUri,
-    name: fileName || 'transcript.pdf',
-    type: 'application/pdf',
-  });
+
+  if (webFile) {
+    // Web: use the actual browser File object
+    formData.append('pdf', webFile, fileName || 'transcript.pdf');
+  } else {
+    // Native (iOS/Android): use the RN-style object
+    formData.append('pdf', {
+      uri: fileUri,
+      name: fileName || 'transcript.pdf',
+      type: 'application/pdf',
+    });
+  }
   formData.append('user_id', userId);
+  formData.append('email', email || '');
+  formData.append('username', username || '');
+  formData.append('password', password || '');
 
   const res = await fetch(`${API_BASE}/api/transcript/upload`, {
     method: 'POST',
@@ -64,13 +75,18 @@ export async function uploadTranscript(fileUri, fileName, userId) {
  * Upload a class schedule PDF for parsing.
  * Maps to: POST /api/schedule/upload
  */
-export async function uploadSchedule(fileUri, fileName, userId) {
+export async function uploadSchedule(fileUri, fileName, userId, webFile) {
   const formData = new FormData();
-  formData.append('pdf', {
-    uri: fileUri,
-    name: fileName || 'schedule.pdf',
-    type: 'application/pdf',
-  });
+
+  if (webFile) {
+    formData.append('pdf', webFile, fileName || 'schedule.pdf');
+  } else {
+    formData.append('pdf', {
+      uri: fileUri,
+      name: fileName || 'schedule.pdf',
+      type: 'application/pdf',
+    });
+  }
   formData.append('user_id', userId);
 
   const res = await fetch(`${API_BASE}/api/schedule/upload`, {

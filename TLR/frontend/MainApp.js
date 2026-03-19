@@ -5,10 +5,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 // Tab screens — only screens that live permanently in the tab bar
-import Homepage from './screens/Homepage';
-import Leaderboard from './screens/Leaderboard';
-import { MapScreen } from './screens/MapScreen';
-import { XPWalletScreen } from './screens/XPWalletScreen';
+import Homepage from './Homepage';
+import Leaderboard from './Leaderboard';
+import { MapScreen } from './MapScreen';
+import { XPWalletScreen } from './XPWalletScreen';
 
 const Tab = createBottomTabNavigator();
 
