@@ -44,7 +44,7 @@ export async function signupUser({ username, email, phoneNumber, password }) {
  * Also sends signup info so the backend can create the user's account.
  * Maps to: POST /api/transcript/upload
  */
-export async function uploadTranscript(fileUri, fileName, userId, email, username, password, webFile) {
+export async function uploadTranscript(fileUri, fileName, userId, email, username, password, webFile, phoneNumber) {
   const formData = new FormData();
 
   if (webFile) {
@@ -60,6 +60,7 @@ export async function uploadTranscript(fileUri, fileName, userId, email, usernam
   }
   formData.append('user_id', userId);
   formData.append('email', email || '');
+  formData.append('phone_number', phoneNumber || '');
   formData.append('username', username || '');
   formData.append('password', password || '');
 

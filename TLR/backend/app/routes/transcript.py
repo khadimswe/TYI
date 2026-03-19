@@ -25,6 +25,7 @@ async def upload_transcript(
     pdf: UploadFile = File(...),
     user_id: str = Form(...),
     email: str = Form(""),
+    phone_number: str = Form(""),
     username: str = Form(""),
     password: str = Form(""),
 ):
@@ -47,18 +48,20 @@ async def upload_transcript(
         existing = sb.table("account_info").select("id").eq("id", user_id).execute()
 
         if not existing.data:
-            if (not email and not username and not password):
+            if (not (email or phone_number) or not username or not password):
                 raise HTTPException(
                     status_code=400,
-                    detail="New user requires email, username, and password",
+                    detail="New user requires (email OR phone_number), username, and password",
                 )
             import bcrypt
             password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-            logger.info("📝 Creating account for %s (%s)...", username, email)
+            contact = email or phone_number
+            logger.info("📝 Creating account for %s (%s)...", username, contact)
             sb.table("account_info").insert({
                 "id": user_id,
                 "username": username,
                 "email": email,
+                "phone_number": phone_number,
                 "password_hash": password_hash,
             }).execute()
             logger.info("✅ Account created for %s", username)

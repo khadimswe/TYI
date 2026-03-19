@@ -53,6 +53,7 @@ export default function TranscriptUpload({ navigation }) {
         signupData.username,
         signupData.password,
         file.webFile,
+        signupData.phone,
       );
       setResult(data);
       if (data.success) {
