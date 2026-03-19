@@ -1,12 +1,23 @@
 import { useState, useRef } from "react";
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  StatusBar, SafeAreaView, ScrollView, Modal,
+  StatusBar, SafeAreaView, ScrollView, Modal, Platform,
 } from "react-native";
-import MapView from "react-native-maps";
-import { Marker, Circle, PROVIDER_DEFAULT } from "react-native-maps";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocation } from '../context/LocationContext';
+import { useLocation } from './LocationContext';
+
+// react-native-maps does not support web — conditionally import
+let MapView = View;
+let Marker = View;
+let Circle = View;
+let PROVIDER_DEFAULT = undefined;
+if (Platform.OS !== 'web') {
+  const Maps = require("react-native-maps");
+  MapView = Maps.default;
+  Marker = Maps.Marker;
+  Circle = Maps.Circle;
+  PROVIDER_DEFAULT = Maps.PROVIDER_DEFAULT;
+}
 
 const COLORS = {
   navyBg: "#0a0f1e", charcoalBg: "#141929", electricBlue: "#3b82f6",

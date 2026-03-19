@@ -1,13 +1,13 @@
-# TagYouAreIt Backend – Python dependencies
-# Install: pip install -r requirements.txt
 
-fastapi>=0.111.0
-uvicorn[standard]>=0.29.0
-python-dotenv>=1.0.0
-supabase>=2.4.0
-openai>=1.30.0
-bcrypt>=4.1.0
-PyPDF2>=3.0.0
-python-multipart>=0.0.9
-pydantic>=2.7.0
+# This is a reference list for npm/yarn installs inside backend/functions.
+# Do NOT run "pip install -r requirements.txt" on this file.
+# Core supabase Functions
+
+# HTTP client (for Claude, Twilio, etc.)
+axios
+# Integrations
+twilio
+openai     
+
+
 

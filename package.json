@@ -1,0 +1,10 @@
+{
+  "name": "tyi-monorepo",
+  "version": "1.0.0",
+  "description": "TYI monorepo",
+  "private": true,
+  "workspaces": [
+    "TLR/frontend",
+    "TLR/backend"
+  ]
+}

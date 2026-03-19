@@ -4,7 +4,7 @@ import {
   TextInput, Animated, StatusBar, SafeAreaView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocation } from '../context/LocationContext';
+import { useLocation } from './LocationContext';
 
 const COLORS = {
   navyBg: "#0a0f1e", charcoalBg: "#141929", electricBlue: "#3b82f6",

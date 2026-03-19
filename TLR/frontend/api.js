@@ -4,6 +4,7 @@
  *
  * Update API_BASE to your deployed URL or local dev server.
  */
+import { Platform } from 'react-native';
 
 // In development, Expo web uses localhost; for device testing use your LAN IP
 const API_BASE = 'http://localhost:8000';
@@ -45,11 +46,20 @@ export async function signupUser({ username, email, phoneNumber, password }) {
  */
 export async function uploadTranscript(fileUri, fileName, userId) {
   const formData = new FormData();
-  formData.append('pdf', {
-    uri: fileUri,
-    name: fileName || 'transcript.pdf',
-    type: 'application/pdf',
-  });
+
+  if (Platform.OS === 'web') {
+    // On web, fetch the blob from the object URL created by the file picker
+    const blob = await fetch(fileUri).then((r) => r.blob());
+    formData.append('pdf', blob, fileName || 'transcript.pdf');
+  } else {
+    // On native (iOS / Android), React Native accepts the { uri, name, type } shorthand
+    formData.append('pdf', {
+      uri: fileUri,
+      name: fileName || 'transcript.pdf',
+      type: 'application/pdf',
+    });
+  }
+
   formData.append('user_id', userId);
 
   const res = await fetch(`${API_BASE}/api/transcript/upload`, {
@@ -66,11 +76,18 @@ export async function uploadTranscript(fileUri, fileName, userId) {
  */
 export async function uploadSchedule(fileUri, fileName, userId) {
   const formData = new FormData();
-  formData.append('pdf', {
-    uri: fileUri,
-    name: fileName || 'schedule.pdf',
-    type: 'application/pdf',
-  });
+
+  if (Platform.OS === 'web') {
+    const blob = await fetch(fileUri).then((r) => r.blob());
+    formData.append('pdf', blob, fileName || 'schedule.pdf');
+  } else {
+    formData.append('pdf', {
+      uri: fileUri,
+      name: fileName || 'schedule.pdf',
+      type: 'application/pdf',
+    });
+  }
+
   formData.append('user_id', userId);
 
   const res = await fetch(`${API_BASE}/api/schedule/upload`, {

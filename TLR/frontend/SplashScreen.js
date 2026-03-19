@@ -7,21 +7,30 @@ import {
   Dimensions,
   StatusBar,
   Easing,
+  Platform,
 } from "react-native";
 
 const { height } = Dimensions.get("window");
+const isWeb = Platform.OS === 'web';
 
 export default function SplashScreen({ navigation }) {
 
-  const dotOpacity = useRef(new Animated.Value(0)).current;
-  const dotScale = useRef(new Animated.Value(0.6)).current;
+  const dotOpacity = useRef(new Animated.Value(isWeb ? 1 : 0)).current;
+  const dotScale = useRef(new Animated.Value(isWeb ? 1 : 0.6)).current;
 
-  const tagOpacity = useRef(new Animated.Value(0)).current;
-  const tagScale = useRef(new Animated.Value(0.8)).current;
+  const tagOpacity = useRef(new Animated.Value(isWeb ? 1 : 0)).current;
+  const tagScale = useRef(new Animated.Value(isWeb ? 1 : 0.8)).current;
 
   const tagY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    // On web, skip animations and navigate after a brief delay
+    if (isWeb) {
+      const timer = setTimeout(() => {
+        navigation.replace("LoginSignup");
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
 
     Animated.sequence([
 

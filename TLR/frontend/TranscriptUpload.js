@@ -17,14 +17,14 @@ export default function TranscriptUpload({ navigation }) {
   const handlePickFile = async () => {
     setPickError(null);
     try {
-      const res = await DocumentPicker.getDocumentAsync({
+      const result = await DocumentPicker.getDocumentAsync({
         type: ['application/pdf'],
         copyToCacheDirectory: true,
       });
 
       // expo-document-picker v11+ returns { canceled, assets }
-      if (!res.canceled && res.assets && res.assets.length > 0) {
-        const picked = res.assets[0];
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const picked = result.assets[0];
         setFile({ name: picked.name, uri: picked.uri, size: picked.size });
       }
     } catch (err) {
@@ -36,8 +36,9 @@ export default function TranscriptUpload({ navigation }) {
     if (!file) return;
     setUploading(true);
     try {
-      // TODO: replace hardcoded user_id with real user context
-      const userId = 'TEMP_USER_ID';
+      // TODO: replace with real user ID from authentication context
+      // For now, generate a test UUID so database inserts work
+      const userId = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
       const data = await uploadTranscript(file.uri, file.name, userId);
       setResult(data);
       if (data.success) {
@@ -96,7 +97,7 @@ export default function TranscriptUpload({ navigation }) {
                 <Text style={styles.badgePreviewTitle}>Your Verified Course Badges</Text>
               </View>
               <View style={styles.badgeRow}>
-                {MOCK_VERIFIED_COURSES.map((course) => (
+                {(result?.verified_courses || []).map((course) => (
                   <View key={course} style={styles.badge}>
                     <Ionicons name="checkmark-circle" size={12} color="#3B82F6" />
                     <Text style={styles.badgeText}>{course}</Text>
@@ -124,7 +125,7 @@ export default function TranscriptUpload({ navigation }) {
                     <Ionicons name="cloud-upload-outline" size={36} color="#3B82F6" />
                   </View>
                   <Text style={styles.uploadText}>Tap to choose your transcript</Text>
-                  <Text style={styles.uploadHint}>PDF, JPG, or PNG · Max 10MB</Text>
+                  <Text style={styles.uploadHint}>PDF · Max 10MB</Text>
                 </>
               ) : (
                 <View style={styles.fileRow}>

@@ -1,33 +1,32 @@
+import 'react-native-gesture-handler';
 import React from 'react';
+import { View, Text, Platform } from 'react-native';
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { LocationProvider } from './context/LocationContext';
+import { LocationProvider } from './LocationContext';
 
-// screens
-import SplashScreen from './screens/SplashScreen';
-import LoginSignup from './screens/LoginSignup';
+import SplashScreen from './SplashScreen';
+import LoginSignup from './LoginSignup';
+import SignupVerify from './SignupVerify';
+import CreateAccount from './CreateAccount';
+import ForgotPassword from "./ForgotPassword";
+import ForgotUsername from "./ForgotUsername";
+import OnboardingScreen from "./OnboardingScreen";
+import OnboardingClasses from "./OnboardingClasses";
+import TranscriptUpload from './TranscriptUpload';
+import OnboardingHobbies from "./OnboardingHobbies";
+import OnboardingTrustedContact from "./OnboardingTrustedContact";
+import OnboardingTutorial from "./OnboardingTutorial";
+import Profile from "./Profile";
 import MainApp from './MainApp';
-import SignupVerify from './screens/SignupVerify';
-import CreateAccount from './screens/CreateAccount';
-import OnboardingScreen from "./screens/OnboardingScreen";
-import OnboardingClasses from "./screens/OnboardingClasses";
-import TranscriptUpload from './screens/TranscriptUpload';
-import OnboardingHobbies from "./screens/OnboardingHobbies";
-import OnboardingTrustedContact from "./screens/OnboardingTrustedContact";
-import OnboardingTutorial from "./screens/OnboardingTutorial";
-import ForgotPassword from "./screens/ForgotPassword";
-import ForgotUsername from "./screens/ForgotUsername";
-import Profile from "./screens/Profile";
 
-
-import CreateTag from "./screens/CreateTag";
-import { TagFeedScreen } from "./screens/TagFeedScreen";
-import { MapScreen } from "./screens/MapScreen";
-import { SessionActiveScreen, SessionCompleteScreen } from "./screens/SessionScreens";
-import { XPWalletScreen } from './screens/XPWalletScreen';
-import { HelperOrientationScreen } from "./screens/HelperOrientationScreen";
-import { TalentProfileScreen } from './screens/TalentProfileScreen';
-
+import CreateTag from "./CreateTag";
+import { TagFeedScreen } from "./TagFeedScreen";
+import { MapScreen } from "./MapScreen";
+import { SessionActiveScreen, SessionCompleteScreen } from "./SessionScreens";
+import { XPWalletScreen } from './XPWalletScreen';
+import { HelperOrientationScreen } from "./HelperOrientationScreen";
+import { TalentProfileScreen } from './TalentProfileScreen';
 
 const Stack = createStackNavigator();
 
@@ -57,7 +56,7 @@ export default function App() {
           <Stack.Screen name="HelperOrientation" component={HelperOrientationScreen} />
           <Stack.Screen name="MainApp" component={MainApp} />
           <Stack.Screen name="Profile" component={Profile} />
-          <Stack.Screen name = "TalentProfile" component ={TalentProfileScreen} />
+          <Stack.Screen name="TalentProfile" component={TalentProfileScreen} />
           <Stack.Screen name="CreateTag" component={CreateTag} />
           <Stack.Screen name="TagFeed" component={TagFeedScreen} />
           <Stack.Screen name="MapScreen" component={MapScreen} />

@@ -1,5 +1,6 @@
 {
   "expo": {
+    "entryPoint": "./App.js",
     "name": "tagit",
     "slug": "tagit",
     "version": "1.0.0",
@@ -24,7 +25,10 @@
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single",
+      "backgroundColor": "#0A0F1E"
     }
   }
 }

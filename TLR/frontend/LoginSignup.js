@@ -9,37 +9,15 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert,
-  ActivityIndicator,
 } from 'react-native';
-import { loginUser } from './api';
 
 export default function LoginSignup({ navigation }) {
   const [isLogin, setIsLogin] = useState(true);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    if (!identifier.trim() || !password.trim()) {
-      Alert.alert('Error', 'Please enter your credentials');
-      return;
-    }
-    setLoading(true);
-    try {
-      const data = await loginUser(identifier, password);
-      if (data.success) {
-        // TODO: persist user_id / token in context or AsyncStorage
-        navigation.navigate('MainApp');
-      } else {
-        Alert.alert('Login Failed', data.message || 'Invalid credentials');
-      }
-    } catch (err) {
-      Alert.alert('Error', 'Could not connect to the server');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  const handleLogin = () => {
+    navigation.navigate('MainApp');
   };
 
   const handleSignupStart = () => {
@@ -104,12 +82,8 @@ export default function LoginSignup({ navigation }) {
                 />
               </View>
 
-              <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-                {loading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.buttonText}>Login</Text>
-                )}
+              <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                <Text style={styles.buttonText}>Login</Text>
               </TouchableOpacity>
 
               <View style={styles.forgotLinks}>

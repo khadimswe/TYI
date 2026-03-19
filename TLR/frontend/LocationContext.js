@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, useEffect, useRef } from 'react';
-import * as Location from 'expo-location';
+import { Platform } from 'react-native';
+
+let Location = null;
+if (Platform.OS !== 'web') {
+  Location = require('expo-location');
+}
 
 // ── Create the context ────────────────────────────────────────────────────────
 const LocationContext = createContext({
@@ -18,6 +23,33 @@ export function LocationProvider({ children }) {
   const watchRef = useRef(null);
 
   useEffect(() => {
+    // On web, use browser Geolocation API or skip
+    if (Platform.OS === 'web') {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setLocation({
+              latitude: pos.coords.latitude,
+              longitude: pos.coords.longitude,
+              accuracy: pos.coords.accuracy,
+            });
+            setPermission('granted');
+            setLoading(false);
+          },
+          (err) => {
+            setError('Web location error: ' + err.message);
+            setPermission('denied');
+            setLoading(false);
+          }
+        );
+      } else {
+        setError('Geolocation not supported on this browser.');
+        setLoading(false);
+      }
+      return;
+    }
+
+    // Native path
     let cancelled = false;
 
     const start = async () => {

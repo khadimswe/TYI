@@ -28,3 +28,4 @@ class TranscriptUploadResponse(BaseModel):
     approved: Optional[bool] = None
     gpa: Optional[float] = None
     courses_count: Optional[int] = None
+    verified_courses: list[str] = []
