@@ -11,6 +11,10 @@ const API_BASE = 'http://localhost:8000';
 /**
  * Login with identifier (username / email / phone) + password.
  * Maps to: POST /api/auth/login
+ *
+ * On success the response includes:
+ *   user_id, username, email, phone_number,
+ *   schedule[], tutoring_approval[], tutoring_classes[]
  */
 export async function loginUser(identifier, password) {
   const res = await fetch(`${API_BASE}/api/auth/login`, {
@@ -18,6 +22,16 @@ export async function loginUser(identifier, password) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ identifier, password }),
   });
+  return res.json();
+}
+
+/**
+ * Fetch the current user's profile + all related records
+ * (schedule, tutoring approval, tutoring classes).
+ * Maps to: GET /api/auth/me/:userId
+ */
+export async function fetchUserProfile(userId) {
+  const res = await fetch(`${API_BASE}/api/auth/me/${userId}`);
   return res.json();
 }
 

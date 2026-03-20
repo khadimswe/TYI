@@ -9,6 +9,9 @@ from app.models.auth import (
     LoginResponse,
     SignupRequest,
     SignupResponse,
+    ScheduleItem,
+    TutoringApprovalItem,
+    TutoringClassItem,
 )
 from app.models.transcript import (
     CourseRecord,
@@ -27,6 +30,9 @@ __all__ = [
     "LoginResponse",
     "SignupRequest",
     "SignupResponse",
+    "ScheduleItem",
+    "TutoringApprovalItem",
+    "TutoringClassItem",
     # Transcript
     "CourseRecord",
     "TranscriptParsed",
